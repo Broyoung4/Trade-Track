@@ -13,8 +13,11 @@ export default function Home() {
           >
             Inventory
           </Link>
-          <Link href="/inventory" className="px-6 py-4 border border-slate-500 rounded-xl">
+          <Link href="/sales" className="px-6 py-4 border border-slate-500 rounded-xl">
             Sales
+          </Link>
+          <Link href="/sales" className="px-6 py-4 border border-slate-500 rounded-xl">
+            Profit / Loss Margin
           </Link>
         </div>
       </main>
