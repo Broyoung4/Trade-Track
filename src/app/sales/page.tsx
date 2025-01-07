@@ -1,102 +1,83 @@
-"use client";
-import React, { useState, useEffect } from "react";
-import { useRouter } from 'next/navigation';
+'use client';
+import React, { useEffect, useState } from 'react';
+import { prisma } from '../db';
 
+const fetchSalesForToday = async () => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const sold = await prisma.sold.findMany({
+    where: {
+      createdAt: {
+        gte: today,
+      },
+    },
+  });
+
+  return sold;
+};
+
+const updateInventory = async (sold: { itemId: number; quantity: number }[]) => {
+  for (const sale of sold) {
+    await prisma.inventory.update({
+      where: { id: sale.itemId },
+      data: { quantity: { decrement: sale.quantity } },
+    });
+  }
+};
+
+interface Sale {
+  id: number;
+  name: string;
+  quantity: number;
+  price: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
 
 const Page = () => {
-  const [salesToday, setSalesToday] = useState([]);
-  const [showSalesPage, setShowSalesPage] = useState(false);
+  const [sales, setSales] = useState<Sale[]>([]);
 
-
-  const router = useRouter();
-
-  // Function to handle user prompt response
-  const handlePromptResponse = (response) => {
-    if (response.toLowerCase() === "no") {
-      setShowSalesPage(true); // Show sales page if user confirms
-    } else {
-      // Handle case where user doesn't want to input a sale
-      alert("User declined to input a sale.");
-      router.push('/salesentry');
-    }
-  };
-
-  // Function to handle adding a new sale
-  const handleAddSale = (newSale) => {
-    // Check if a sale with the same product already exists today
-    const existingSaleIndex = salesToday.findIndex(
-      (sale) => sale.product === newSale.product
-    );
-
-    if (existingSaleIndex !== -1) {
-      // Update existing sale
-      const updatedSales = [...salesToday];
-      updatedSales[existingSaleIndex] = {
-        ...updatedSales[existingSaleIndex],
-        quantity: updatedSales[existingSaleIndex].quantity + newSale.quantity,
-        total: updatedSales[existingSaleIndex].quantity * newSale.price,
-      };
-      setSalesToday(updatedSales);
-    } else {
-      // Add new sale
-      setSalesToday([
-        ...salesToday,
-        { ...newSale, total: newSale.quantity * newSale.price },
-      ]);
-    }
-  };
-
-  // Example: Fetch sales data from API or database (replace with your actual implementation)
   useEffect(() => {
-    // Simulate fetching data from an API or database
-    const mockSalesData = [
-      { product: "Product A", quantity: 2, price: 10 },
-      { product: "Product B", quantity: 1, price: 20 },
-    ];
-    setSalesToday(mockSalesData);
+    const getSales = async () => {
+      const salesData = await fetchSalesForToday();
+      setSales(salesData);
+      const inventoryUpdates = salesData.map(sale => ({
+        itemId: sale.id,
+        quantity: sale.quantity,
+      }));
+      await updateInventory(inventoryUpdates);
+    };
+
+    getSales();
   }, []);
 
-  if (!showSalesPage) {
-    return (
-      <div className="container min-h-screen p-8 pb-20 font-[family-name:var(--font-geist-sans)] flex_center max-sm:flex-col gap-5">
-        <p>Do you wish to input a sale?</p>
-        <div className="flex_center gap-4 max-sm:mt-4">
-
-          <button className="gen_button" onClick={() => router.push('/salesentry')}>Yes</button>
-          <button className="gen_button" onClick={() => handlePromptResponse("no")}>No</button>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <section className="container min-h-screen p-8 pb-20 font-[family-name:var(--font-geist-sans)]">
-      <h1>Inventory</h1>
-      <div className="flex justify-center items-center mt-4">
-        <h2>Sales Made Today</h2>
-        {/* <table>
+    <div>
+      <h1>Sales for Today</h1>
+      {sales.length === 0 ? (
+        <p>No sales made today</p>
+      ) : (
+        <table className="w-full mt-4">
           <thead>
             <tr>
-              <th>Product</th>
-              <th>Quantity</th>
-              <th>Price</th>
-              <th>Total</th>
+              <th className="text-left">Item</th>
+              <th className="text-left">Quantity</th>
+              <th className="text-left">Price</th>
             </tr>
           </thead>
           <tbody>
-            {salesToday.map((sale, index) => (
+            {sales.map((sale, index) => (
               <tr key={index}>
-                <td>{sale.product}</td>
+                <td>{sale.name}</td>
                 <td>{sale.quantity}</td>
                 <td>{sale.price}</td>
-                <td>{sale.total}</td>
               </tr>
             ))}
           </tbody>
-        </table> */}
-        {/* Add a form or other input mechanism here to allow users to add new sales */}
-      </div>
-    </section>
+        </table>
+      )}
+    </div>
   );
 };
 

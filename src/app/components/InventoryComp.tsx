@@ -1,11 +1,14 @@
-import React from 'react'
+import React from "react";
 
-const InventoryComp = () => {
+const InventoryComp = ({item}) => {
   return (
-    <div >
-        InventoryComp
-    </div>
-  )
-}
+    <tr key={item.id}>
+      <td>{item.name}</td>
+      <td>{item.price}</td>
+      <td>{item.quantity}</td>
+      <td>{item.price * item.quantity}</td>
+    </tr>
+  );
+};
 
-export default InventoryComp
+export default InventoryComp;
