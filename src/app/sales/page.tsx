@@ -1,84 +1,68 @@
-'use client';
-import React, { useEffect, useState } from 'react';
-import { prisma } from '../db';
+import Link from "next/link";
+import { prisma } from "../db"; // Adjust the import according to your project structure
+import { MdAdd } from "react-icons/md";
 
-const fetchSalesForToday = async () => {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
-  const sold = await prisma.sold.findMany({
-    where: {
-      createdAt: {
-        gte: today,
-      },
+async function getInventory() {
+  return await prisma.sold.findMany({
+    orderBy: {
+      createdAt: 'asc', // or 'desc' for descending order
     },
   });
-
-  return sold;
-};
-
-const updateInventory = async (sold: { itemId: number; quantity: number }[]) => {
-  for (const sale of sold) {
-    await prisma.inventory.update({
-      where: { id: sale.itemId },
-      data: { quantity: { decrement: sale.quantity } },
-    });
-  }
-};
-
-interface Sale {
-  id: number;
-  name: string;
-  quantity: number;
-  price: number;
-  createdAt: Date;
-  updatedAt: Date;
 }
 
-const Page = () => {
-  const [sales, setSales] = useState<Sale[]>([]);
+const groupByDate = (sales) => {
+  return sales.reduce((groups, sale) => {
+    const date = new Date(sale.createdAt).toLocaleDateString();
+    if (!groups[date]) {
+      groups[date] = [];
+    }
+    groups[date].push(sale);
+    return groups;
+  }, {});
+};
 
-  useEffect(() => {
-    const getSales = async () => {
-      const salesData = await fetchSalesForToday();
-      setSales(salesData);
-      const inventoryUpdates = salesData.map(sale => ({
-        itemId: sale.id,
-        quantity: sale.quantity,
-      }));
-      await updateInventory(inventoryUpdates);
-    };
-
-    getSales();
-  }, []);
+const page = async () => {
+  const sold = await getInventory();
+  const groupedSales = groupByDate(sold);
 
   return (
-    <div>
-      <h1>Sales for Today</h1>
-      {sales.length === 0 ? (
-        <p>No sales made today</p>
+    <section className="container min-h-screen p-8 pb-20 font-[family-name:var(--font-geist-sans)]">
+      <h1>Sold Today</h1>
+      <Link href='/sales/new' className="flex justify-end items-center mt-4 ">
+        <MdAdd
+          size={25}
+          className="border border-slate-500 hover:bg-red-950"
+        />
+      </Link>
+      {Object.keys(groupedSales).length === 0 ? (
+        <p className="text-center mt-4">No items sold</p>
       ) : (
-        <table className="w-full mt-4">
-          <thead>
-            <tr>
-              <th className="text-left">Item</th>
-              <th className="text-left">Quantity</th>
-              <th className="text-left">Price</th>
-            </tr>
-          </thead>
-          <tbody>
-            {sales.map((sale, index) => (
-              <tr key={index}>
-                <td>{sale.name}</td>
-                <td>{sale.quantity}</td>
-                <td>{sale.price}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        Object.keys(groupedSales).map((date) => (
+          <div key={date}>
+            <h1 className="text-3xl">Sold on {date}</h1>
+            <table className="w-full mt-4">
+              <thead>
+                <tr>
+                  <th className="text-left">Item</th>
+                  <th className="text-left">Price</th>
+                  <th className="text-left">Quantity</th>
+                </tr>
+              </thead>
+              <tbody>
+                {groupedSales[date].map((item, index) => (
+                  <tr key={index}>
+                    <td>{item.name}</td>
+                    <td>{item.price}</td>
+                    <td>{item.quantity}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ))
       )}
-    </div>
+    </section>
   );
 };
 
-export default Page;
+export default page;
