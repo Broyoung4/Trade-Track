@@ -27,13 +27,18 @@ const page = async () => {
 
   return (
     <section className="container min-h-screen p-8 pb-20 font-[family-name:var(--font-geist-sans)]">
-      <h1>Sold Today</h1>
-      <Link href='/sales/new' className="flex justify-end items-center mt-4 ">
-        <MdAdd
-          size={25}
-          className="border border-slate-500 hover:bg-red-950"
-        />
-      </Link>
+      <h1 className="sm:text-4xl text-3xl font-black sm:mb-10 mb-6">SALES</h1>
+      <div className="flex justify-between items-center">
+
+        <Link className="border border-slate-300 bg-transparent px-2 py-1 rounded hover:bg-neutral-400 focus-within:bg-neutral-400" href='/'>Back</Link>
+
+        <Link href='/sales/new' className="flex justify-end items-center mt-4 ">
+          <MdAdd
+            size={25}
+            className="border border-slate-500 hover:bg-red-950"
+          />
+        </Link>
+      </div>
       {Object.keys(groupedSales).length === 0 ? (
         <p className="text-center mt-4">No items sold</p>
       ) : (

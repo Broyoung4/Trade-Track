@@ -1,3 +1,4 @@
+
 import { prisma } from "@/app/db";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -25,16 +26,23 @@ const existingItem = await prisma.inventory.findFirst({
 
   if (existingItem) {
     // Update the quantity of the existing item
-    await prisma.inventory.update({
+    const newQuantity = existingItem.quantity - Number(quantity);
+    if (newQuantity <= 0) {
+      await prisma.inventory.delete({
       where: { id: existingItem.id },
-      data: { quantity: existingItem.quantity - Number(quantity) },
-    });
+      });
+    } else {
+      await prisma.inventory.update({
+      where: { id: existingItem.id },
+      data: { quantity: newQuantity },
+      });
+    }
 
     await prisma.sold.create({
       data: { name, price: Number(price), quantity: Number(quantity) },
     });
    } else {
-  alert("Item does not exist");
+  throw new Error("Item does not exist");
 }
   redirect("/sales");
 }
