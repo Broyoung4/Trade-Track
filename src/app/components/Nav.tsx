@@ -1,0 +1,84 @@
+"use client";
+
+import Image from "next/image";
+import React from "react";
+import nextLogo from "../../../public/globe.svg";
+import Link from "next/link";
+import { useState, useEffect } from "react";
+import { signIn, signOut, useSession, getProviders } from "next-auth/react";
+
+const Nav = () => {
+  const isLoggedIn = true;
+
+  const [providers, setProviders] = useState(null);
+
+  useEffect(() => {
+    const setProvidersIn = async () => {
+      const response = await getProviders();
+
+      setProviders(response);
+    };
+    setProvidersIn();
+  }, []);
+
+  return (
+    <nav className="flex justify-between items-center w-full py-3 px-4">
+      <Link className="flex gap-2 justify-center items-center" href="/">
+        <Image
+          className="object-contain"
+          src={nextLogo}
+          alt="logo"
+          width={30}
+          height={30}
+        />
+        <p className="text-md font-extrabold sm:flex hidden">Trade Track</p>
+      </Link>
+      <div className="sm:flex hidden">
+        {isLoggedIn ? (
+          <div className="flex gap-3 md:gap-5">
+            <Link
+              className="border border-slate-300 bg-transparent px-2 py-1 rounded hover:bg-neutral-400 focus-within:bg-neutral-400"
+              href="/inventory"
+            >
+              Add Inventory
+            </Link>
+            <button
+              className="border border-neutral-950 bg-slate-500 text-neutral-950 px-2 py-1 rounded hover:bg-neutral-950 
+        hover:text-neutral-200
+        hover:border-neutral-500  
+        focus-within:bg-neutral-950"
+              type="button"
+              onClick={signOut}
+            >
+              Sign Out
+            </button>
+
+            <Link href="/profile">
+              <Image
+                src={nextLogo}
+                width={37}
+                height={37}
+                className="rounded-full"
+                alt="profile"
+              />
+            </Link>
+          </div>
+        ) : (
+          <>
+            {providers &&
+              Object.values(providers).map((provider) => (
+                <button
+                  type="button"
+                  key={provider.name}
+                  onClick={() => signIn(provider.id)}
+                  className="border border-slate-300 bg-transparent px-2 py-1 rounded hover:bg-neutral-400 focus-within:bg-neutral-400"
+                >Sign In</button>
+              ))}
+          </>
+        )}
+      </div>
+    </nav>
+  );
+};
+
+export default Nav;
