@@ -11,6 +11,7 @@ const Nav = () => {
   const isLoggedIn = true;
 
   const [providers, setProviders] = useState(null);
+  const [toggleDropdown, setToggleDropdown] = useState(false);
 
   useEffect(() => {
     const setProvidersIn = async () => {
@@ -77,6 +78,53 @@ const Nav = () => {
           </>
         )}
       </div>
+      <div className="sm:hidden flex relative">
+        {isLoggedIn ? (
+          <div className="flex">
+            <Image
+                src={nextLogo}
+                width={37}
+                height={37}
+                className="rounded-full"
+                alt="profile"
+                onClick={() => {setToggleDropdown((prev) => !prev)}}
+              />
+              {toggleDropdown && (
+                <div className="w-32 absolute top-12 right-0 bg-neutral-800 p-2 rounded-lg slide-in-top">
+                  <Link href='/profile' 
+                  className="text-md block my-2"
+                  onClick={()=> setToggleDropdown(false)}
+                  >Profile</Link>
+                  <Link href='/inventory' 
+                  className="text-md block my-2"
+                  onClick={()=> setToggleDropdown(false)}
+                  >Add Inventory</Link>
+                  <button
+                  type="button"
+                  onClick={() => {
+                    setToggleDropdown(false);
+                    signOut();
+                  }}
+                  className=" mt-5 w-full border border-slate-300 bg-transparent px-2 py-1 rounded hover:bg-neutral-400 focus-within:bg-neutral-400"
+                >Sign Out</button>
+                </div>
+              )}
+          </div>
+        ): (
+          <>
+            {providers &&
+              Object.values(providers).map((provider) => (
+                <button
+                  type="button"
+                  key={provider.name}
+                  onClick={() => signIn(provider.id)}
+                  className="border border-slate-300 bg-transparent px-2 py-1 rounded hover:bg-neutral-400 focus-within:bg-neutral-400"
+                >Sign In</button>
+              ))}
+          </>
+        )}
+      </div>
+
     </nav>
   );
 };
