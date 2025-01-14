@@ -5,14 +5,14 @@ import { connectToDB } from '../../../../../utils/database';
 import User from '../../../../../models/user';
 
 console.log({
-    clientId: process.env.GOOGLE_ID,
+    clientId: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
 })
 
 const handler = NextAuth({
     providers: [
         GoogleProvider({
-            clientId: process.env.GOOGLE_ID,
+            clientId: process.env.GOOGLE_CLIENT_ID,
             clientSecret: process.env.GOOGLE_CLIENT_SECRET,
         }),
     ],
@@ -36,7 +36,7 @@ const handler = NextAuth({
                 if(!userExists) {
                     await User.create({
                         email: profile.email,
-                        username: profile.name.replace(' ', '').toLowerCase(),
+                        username: profile.name.replace(/\s/g, '').toLowerCase(),
                         image: profile.image,
                     })
                 }
