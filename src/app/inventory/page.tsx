@@ -3,6 +3,7 @@ import { IoMdClose } from "react-icons/io";
 import { prisma } from "../db";
 import InventoryComp from "../components/InventoryComp";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
 
 async function getInventory() {
   return await prisma.inventory.findMany();
