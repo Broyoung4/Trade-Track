@@ -25,7 +25,7 @@ const Nav = () => {
   }, []);
 
   return (
-    <nav className="flex justify-between items-center w-full py-3 px-4">
+    <nav className="fixed flex justify-between items-center w-full py-3 px-4">
       <Link className="flex gap-2 justify-center items-center" href="/">
         <Image
           className="object-contain"

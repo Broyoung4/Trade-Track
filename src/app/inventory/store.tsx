@@ -1,47 +1,22 @@
-"use client";
-
-import { useState, useEffect } from "react";
 import { MdAdd } from "react-icons/md";
 import { IoMdClose } from "react-icons/io";
+import { prisma } from "../db";
+import InventoryComp from "../components/InventoryComp";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
-import { useRouter } from "next/router";
-import InventoryComp from "../components/InventoryComp";
 
-const page = () => {
-    const [searchText, setSearchText] = useState('');
-    const [inventory, setInventory] = useState([]);
+async function getInventory() {
+  return await prisma.inventory.findMany();
+}
 
-    const handleSearchChange = (e) => {
-        setSearchText(e.target.value);
-    };
-
-    useEffect(()=>{
-      const fetchInventory = async () => {
-        const response = await fetch('/api/inventory');
-        const data = await response.json();
-        setInventory(data);
-      }
-
-      fetchInventory();
-    },[]);
-
+const page = async () => {
+    const inventory = await getInventory();
+  
+    console.log(inventory);
+  
   return (
     <section className="container min-h-screen p-8 pb-20 font-[family-name:var(--font-geist-sans)]">
-      <form
-        action=""
-        className="relative w-full flex justify-center items-center"
-      >
-        <input
-          type="text"
-          placeholder="Search for an item"
-          value={searchText}
-          onChange={handleSearchChange}
-          required
-          className=""
-        />
-      </form>
-
+      <h1 className="sm:text-4xl text-3xl font-black sm:mb-10 mb-6">INVENTORY</h1>
       <div className="flex justify-between items-center">
 
         <Link className="border border-slate-300 bg-transparent px-2 py-1 rounded hover:bg-neutral-400 focus-within:bg-neutral-400" href='/'>Back</Link>
